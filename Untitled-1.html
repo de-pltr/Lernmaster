@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LernMaster - Study Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-full flex flex-col md:flex-row overflow-hidden">
+
+    <!-- ================= AUTH SCREEN OVERLAY ================= -->
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 text-center">
+            <div class="w-16 h-16 bg-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold shadow-lg shadow-indigo-200">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">Willkommen bei LernMaster</h2>
+                <p class="text-slate-500 text-sm mt-1">Erstelle ein Konto oder melde dich an, um dich mit anderen zu vernetzen.</p>
+            </div>
+            
+            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Dein Name / Benutzername</label>
+                    <input type="text" id="auth-username" required placeholder="z.B. Alex Müller" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Rolle / Status</label>
+                    <select id="auth-role" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Lernender">Lernender</option>
+                        <option value="Gymnasiast">Gymnasiast</option>
+                        <option value="Anderes">Anderes</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Passwort</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-2xl text-sm shadow-md shadow-indigo-100 transition">
+                    Jetzt starten & Account erstellen
+                </button>
+            </form>
+            <div class="text-xs text-slate-400">
+                Durch die Anmeldung kannst du Karteikarten teilen, im Study Room chatten und deine Noten speichern.
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar / Top Navigation Header -->
+    <aside class="w-full md:w-64 bg-indigo-700 text-white shadow-md flex flex-col z-50 shrink-0">
+        <div class="p-4 sm:p-6 flex items-center justify-between md:justify-start space-x-3 border-b border-indigo-600">
+            <div class="bg-white text-indigo-600 p-2 rounded-xl font-bold text-xl shadow">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <span class="text-xl font-bold tracking-tight">Lern<span class="text-indigo-200">Master</span></span>
+                <span class="block text-[10px] text-indigo-200 uppercase tracking-widest font-semibold">Schweizer Bildung</span>
+            </div>
+            <button onclick="toggleMobileMenu()" class="md:hidden text-white focus:outline-none p-2">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Categories -->
+        <nav id="mobile-menu" class="hidden md:flex flex-col flex-1 p-4 space-y-6 overflow-y-auto">
+            <!-- Section: Planning -->
+            <div>
+                <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-3 mb-2 block">Organisation</span>
+                <div class="space-y-1">
+                    <button onclick="switchTab('calendar'); toggleMobileMenu();" id="nav-calendar" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition bg-indigo-800 flex items-center gap-3">
+                        <i class="fa-regular fa-calendar-days w-5 text-indigo-300"></i>Kalender
+                    </button>
+                    <button onclick="switchTab('schedule'); toggleMobileMenu();" id="nav-schedule" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-table-cells w-5 text-indigo-300"></i>Stundenplan
+                    </button>
+                    <button onclick="switchTab('grades'); toggleMobileMenu();" id="nav-grades" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-calculator w-5 text-indigo-300"></i>Notenrechner
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section: Learning -->
+            <div>
+                <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-3 mb-2 block">Lernen & Fokus</span>
+                <div class="space-y-1">
+                    <button onclick="switchTab('flashcards'); toggleMobileMenu();" id="nav-flashcards" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-clone w-5 text-indigo-300"></i>Karteikarten & Quiz
+                    </button>
+                    <button onclick="switchTab('pomodoro'); toggleMobileMenu();" id="nav-pomodoro" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-stopwatch w-5 text-indigo-300"></i>Pomodoro Timer
+                    </button>
+                    <button onclick="switchTab('summaries'); toggleMobileMenu();" id="nav-summaries" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-book-open w-5 text-indigo-300"></i>Zusammenfassungen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section: Community -->
+            <div>
+                <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider px-3 mb-2 block">Austausch & Community</span>
+                <div class="space-y-1">
+                    <button onclick="switchTab('community'); toggleMobileMenu();" id="nav-community" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-comments w-5 text-indigo-300"></i>Post Room
+                    </button>
+                    <button onclick="switchTab('studyroom'); toggleMobileMenu();" id="nav-studyroom" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-users w-5 text-indigo-300"></i>Study Room <span class="ml-auto bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">LIVE</span>
+                    </button>
+                    <button onclick="switchTab('users'); toggleMobileMenu();" id="nav-users" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-indigo-600 flex items-center gap-3">
+                        <i class="fa-solid fa-address-book w-5 text-indigo-300"></i>Lernende finden
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- User Profile Footer Box -->
+        <div class="p-4 border-t border-indigo-600 flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-3">
+                <div id="sidebar-avatar" class="w-9 h-9 rounded-xl bg-indigo-500 text-white font-bold flex items-center justify-center text-sm shadow">A</div>
+                <div class="overflow-hidden">
+                    <span id="sidebar-username" class="font-bold block truncate">Alex Müller</span>
+                    <span id="sidebar-role" class="text-[10px] text-indigo-200 block truncate">Gymnasiast</span>
+                </div>
+            </div>
+            <button onclick="logoutUser()" title="Abmelden" class="text-indigo-200 hover:text-white p-2">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto">
+
+        <!-- ================= 1. KALENDER TAB ================= -->
+        <div id="tab-calendar" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Lern- & Prüfungskalender</h1>
+                    <p class="text-slate-500 text-sm">Behalte den Überblick über all deine Klausuren, Abgaben und Termine.</p>
+                </div>
+                <button onclick="openModal('event-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Termin hinzufügen
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Month View -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 id="calendar-month-title" class="text-lg font-bold text-slate-800">Juni 2026</h2>
+                        <div class="flex space-x-2">
+                            <button onclick="changeMonth(-1)" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button onclick="changeMonth(1)" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400">
+                        <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+                    </div>
+                    <div id="calendar-days-grid" class="grid grid-cols-7 gap-2">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Upcoming Events List -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4 flex flex-col">
+                    <h2 class="text-lg font-bold text-slate-800">Anstehende Prüfungen</h2>
+                    <div id="upcoming-events-list" class="space-y-3 flex-1 overflow-y-auto">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 1.5 STUNDENPLAN TAB ================= -->
+        <div id="tab-schedule" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Dein Stundenplan</h1>
+                    <p class="text-slate-500 text-sm">Trage deinen Wochenplan für Schule oder Berufsschule ein.</p>
+                </div>
+                <button onclick="openModal('schedule-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Fach eintragen
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="schedule-grid">
+                <!-- Dynamically populated weekdays -->
+            </div>
+        </div>
+
+        <!-- ================= 2. ZUSAMMENFASSUNGEN TAB ================= -->
+        <div id="tab-summaries" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Lernzusammenfassungen</h1>
+                    <p class="text-slate-500 text-sm">Teile deine eigenen Skripte oder entdecke Hilfreiches von anderen.</p>
+                </div>
+                <button onclick="openModal('summary-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-upload"></i> Zusammenfassung hochladen
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <input type="text" id="summary-search" oninput="filterSummaries()" placeholder="Suche nach Fach, Titel oder Autor..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <select id="summary-filter" onchange="filterSummaries()" class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all">Alle Fächer</option>
+                    <option value="Mathe">Mathe</option>
+                    <option value="Informatik">Informatik</option>
+                    <option value="Geschichte">Geschichte</option>
+                    <option value="Biologie">Biologie</option>
+                    <option value="Wirtschaft">Wirtschaft</option>
+                </select>
+            </div>
+
+            <div id="summaries-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- ================= 3. KARTEIKARTEN TAB ================= -->
+        <div id="tab-flashcards" class="tab-content hidden space-y-6">
+            <div id="flashcard-lobby">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Karteikarten & Quiz</h1>
+                        <p class="text-slate-500 text-sm">Erstelle eigene Decks oder übe mit dem Quizlet-Modus.</p>
+                    </div>
+                    <button onclick="openModal('deck-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Neues Deck erstellen
+                    </button>
+                </div>
+                <div id="decks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div id="flashcard-session" class="hidden space-y-6 max-w-2xl mx-auto">
+                <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <button onclick="closeDeckSession()" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Zurück zur Übersicht
+                    </button>
+                    <div class="flex space-x-2">
+                        <button onclick="setStudyMode('study')" id="mode-btn-study" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white">Lern-Modus</button>
+                        <button onclick="setStudyMode('test')" id="mode-btn-test" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Test-Modus</button>
+                    </div>
+                </div>
+
+                <div id="session-study-view" class="space-y-6">
+                    <div onclick="flipCard()" class="bg-white p-12 rounded-2xl shadow-sm border border-slate-100 text-center min-h-[250px] flex flex-col justify-center items-center cursor-pointer select-none transition hover:border-indigo-300 relative">
+                        <span id="card-side-label" class="absolute top-4 left-4 text-xs font-bold text-indigo-500 uppercase tracking-wider">Vorderseite (Frage)</span>
+                        <p id="card-content-display" class="text-xl font-bold text-slate-800 my-4">Frage wird geladen...</p>
+                        <span class="absolute bottom-4 text-xs text-slate-400 font-medium">Zum Umdrehen anklicken</span>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <button onclick="prevCard()" class="bg-white border border-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl text-sm hover:bg-slate-50 transition">
+                            <i class="fa-solid fa-chevron-left mr-2"></i> Vorherige
+                        </button>
+                        <span id="card-counter" class="text-xs font-semibold text-slate-500">Karte 1 von 3</span>
+                        <button onclick="nextCard()" class="bg-white border border-slate-200 text-slate-700 font-medium px-4 py-2.5 rounded-xl text-sm hover:bg-slate-50 transition">
+                            Nächste <i class="fa-solid fa-chevron-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="session-test-view" class="hidden bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                        <h3 class="font-bold text-slate-800">Quiz Test-Modus</h3>
+                        <span id="test-progress" class="text-xs font-bold text-indigo-600">Frage 1 von 3</span>
+                    </div>
+                    <div id="test-question-box" class="space-y-4">
+                        <!-- Question and options -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="openModal('card-add-modal')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Weitere Karte hinzufügen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 3.5 POMODORO TIMER TAB ================= -->
+        <div id="tab-pomodoro" class="tab-content hidden space-y-6 max-w-xl mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center space-y-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Pomodoro Lern-Timer</h1>
+                    <p class="text-slate-500 text-sm mt-1">Konzentriere dich 25 Minuten lang intensiv und mache danach Pause.</p>
+                </div>
+
+                <div class="flex justify-center space-x-2">
+                    <button onclick="setPomodoroMode('work')" id="pomo-mode-work" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">Fokus (25 Min)</button>
+                    <button onclick="setPomodoroMode('break')" id="pomo-mode-break" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Pause (5 Min)</button>
+                </div>
+
+                <div class="py-8">
+                    <span id="pomo-timer-display" class="text-6xl font-black text-indigo-900 tracking-tight">25:00</span>
+                    <span id="pomo-status-text" class="block text-xs font-semibold uppercase tracking-wider text-indigo-600 mt-2">Bereit zum Lernen</span>
+                </div>
+
+                <div class="flex justify-center space-x-4">
+                    <button onclick="startPomodoro()" id="pomo-start-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Starten
+                    </button>
+                    <button onclick="resetPomodoro()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-6 py-3 rounded-xl text-sm transition">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-around text-center">
+                    <div>
+                        <span id="pomo-sessions-count" class="text-xl font-bold text-slate-800">0</span>
+                        <span class="block text-[10px] text-slate-400 uppercase font-semibold">Sessions heute</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 4. COMMUNITY CHAT TAB ================= -->
+        <div id="tab-community" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Community Post & Fragerunde</h1>
+                    <p class="text-slate-500 text-sm">Stelle Fragen an andere Lernende oder hilf deinen Mitschülern/Kommilitonen.</p>
+                </div>
+                <button onclick="openModal('post-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square"></i> Frage stellen
+                </button>
+            </div>
+
+            <div id="posts-feed" class="space-y-4">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- ================= 4.5 VIRTUAL STUDY ROOM TAB ================= -->
+        <div id="tab-studyroom" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Virtueller Study Room <span class="text-xs px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold ml-2">Live Chat</span></h1>
+                    <p class="text-slate-500 text-sm">Lerne gemeinsam mit anderen im virtuellen Raum, stelle Fragen und tausche dich aus.</p>
+                </div>
+                <div class="flex items-center space-x-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                    <i class="fa-solid fa-circle text-emerald-500 text-[10px]"></i>
+                    <span id="online-users-count">4 Lernende online</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                    <div id="study-room-messages" class="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
+                        <!-- Dynamically populated chat messages -->
+                    </div>
+                    <form onsubmit="sendStudyRoomMessage(event)" class="flex gap-2 pt-2 border-t border-slate-100">
+                        <input type="text" id="study-room-input" required placeholder="Nachricht an den Study Room schreiben..." class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Senden
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">Anwesende Lernende</h2>
+                    <div id="online-users-sidebar" class="space-y-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 4.6 USERS DIRECTORY TAB ================= -->
+        <div id="tab-users" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Andere Lernende entdecken</h1>
+                    <p class="text-slate-500 text-sm">Finde Mitschüler, Azubis und Studierende, um Karteikarten und Zusammenfassungen auszutauschen.</p>
+                </div>
+            </div>
+
+            <div id="users-directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- ================= 5. NOTENRECHNER TAB ================= -->
+        <div id="tab-grades" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Notenrechner & Schnitt</h1>
+                    <p class="text-slate-500 text-sm">Trage deine Fächer, Noten und Gewichtungen ein, um deinen Notenschnitt zu berechnen.</p>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-100 px-6 py-3 rounded-2xl text-center">
+                    <span class="text-xs font-medium text-indigo-600 uppercase tracking-wider block">Aktueller Schnitt</span>
+                    <span id="gpa-display" class="text-3xl font-bold text-indigo-900">1.0</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6 max-w-4xl mx-auto">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-slate-800">Deine Fächer & Noten</h2>
+                    <button onclick="openModal('grade-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Fach hinzufügen
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-xs uppercase text-slate-400 font-semibold">
+                                <th class="py-3 px-4">Fach</th>
+                                <th class="py-3 px-4">Noten / Teilleistungen</th>
+                                <th class="py-3 px-4">Durchschnitt</th>
+                                <th class="py-3 px-4">Gewichtung</th>
+                                <th class="py-3 px-4 text-right">Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal: Add Schedule Item -->
+    <div id="schedule-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Fach zum Stundenplan hinzufügen</h3>
+                <button onclick="closeModal('schedule-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="schedule-form" onsubmit="addScheduleItem(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Wochentag</label>
+                    <select id="sch-day" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Montag">Montag</option>
+                        <option value="Dienstag">Dienstag</option>
+                        <option value="Mittwoch">Mittwoch</option>
+                        <option value="Donnerstag">Donnerstag</option>
+                        <option value="Freitag">Freitag</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach & Raum</label>
+                    <input type="text" id="sch-subject" required placeholder="z.B. Mathematik (Raum 204)" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Von</label>
+                        <input type="time" id="sch-time-start" required value="08:00" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bis</label>
+                        <input type="time" id="sch-time-end" required value="09:30" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('schedule-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Event -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Neuen Termin eintragen</h3>
+                <button onclick="closeModal('event-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="event-form" onsubmit="addEvent(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Titel</label>
+                    <input type="text" id="event-title" required placeholder="z.B. Mathe Klausur" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Datum</label>
+                        <input type="date" id="event-date" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Typ</label>
+                        <select id="event-type" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Prüfung">Prüfung</option>
+                            <option value="Abgabe">Abgabe</option>
+                            <option value="Lernsession">Lernsession</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach</label>
+                    <input type="text" id="event-subject" required placeholder="z.B. Mathematik" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('event-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Upload Summary -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Zusammenfassung hochladen</h3>
+                <button onclick="closeModal('summary-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="summary-form" onsubmit="addSummary(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Titel der Zusammenfassung</label>
+                    <input type="text" id="sum-title" required placeholder="z.B. Komplette Analysis Formelsammlung" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach</label>
+                    <select id="sum-subject" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Mathe">Mathe</option>
+                        <option value="Informatik">Informatik</option>
+                        <option value="Geschichte">Geschichte</option>
+                        <option value="Biologie">Biologie</option>
+                        <option value="Wirtschaft">Wirtschaft</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Beschreibung</label>
+                    <textarea id="sum-desc" rows="3" required placeholder="Worum geht es in diesem Dokument..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('summary-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Hochladen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create Deck -->
+    <div id="deck-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Neues Karteikarten-Deck</h3>
+                <button onclick="closeModal('deck-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="deck-form" onsubmit="addDeck(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Deck Titel</label>
+                    <input type="text" id="deck-title" required placeholder="z.B. Vokabeln Spanisch Unit 3" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach</label>
+                    <input type="text" id="deck-subject" required placeholder="z.B. Spanisch" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('deck-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Card to Active Deck -->
+    <div id="card-add-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Karteikarte hinzufügen</h3>
+                <button onclick="closeModal('card-add-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="card-form" onsubmit="addCardToDeck(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Frage (Vorderseite)</label>
+                    <textarea id="card-front" rows="2" required placeholder="Was steht vorne auf der Karte?" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Antwort (Rückseite)</label>
+                    <textarea id="card-back" rows="2" required placeholder="Was ist die richtige Antwort?" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('card-add-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Post Question -->
+    <div id="post-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Frage an die Community</h3>
+                <button onclick="closeModal('post-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="post-form" onsubmit="addPost(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach / Thema</label>
+                    <input type="text" id="post-subject" required placeholder="z.B. Physik - Mechanik" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Deine Frage</label>
+                    <textarea id="post-content" rows="4" required placeholder="Beschreibe dein Problem oder deine Frage im Detail..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('post-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Frage posten</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Grade -->
+    <div id="grade-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">Fach & Note hinzufügen</h3>
+                <button onclick="closeModal('grade-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="grade-form" onsubmit="addGradeSubject(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fach</label>
+                    <input type="text" id="grade-subject" required placeholder="z.B. Chemie" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Note (z.B. 1.7)</label>
+                        <input type="number" step="0.1" id="grade-value" required placeholder="1.7" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Gewichtung</label>
+                        <input type="number" id="grade-weight" required value="1" min="1" max="5" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('grade-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-50">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow-sm">Hinzufügen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-lg transform translate-y-24 opacity-0 transition-all duration-300 z-50 text-sm font-medium flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-msg">Erfolgreich gespeichert</span>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // --- Global Helper Functions ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if(menu) menu.classList.toggle('hidden');
+        }
+
+        // --- State Management (Schweizer Notensystem: 6.0 beste Note, 1.0 schlechteste Note, 4.0 genügend) ---
+        let state = {
+            currentUser: null,
+            activeTab: 'calendar',
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            users: [
+                { id: 'u1', username: 'Sarah M.', role: 'Gymnasiastin', status: 'Löst Mathe-Aufgaben', decksCount: 4, summariesCount: 3 },
+                { id: 'u2', username: 'Julian K.', role: 'Informatik-Lernender', status: 'Lernt mit Karteikarten', decksCount: 2, summariesCount: 5 },
+                { id: 'u3', username: 'Mia W.', role: 'Gymnasiastin', status: 'Biologie Zusammenfassung', decksCount: 6, summariesCount: 2 },
+                { id: 'u4', username: 'Alex Müller', role: 'Gymnasiast', status: 'Aktiv', decksCount: 2, summariesCount: 1 }
+            ],
+            events: [
+                { id: 1, title: 'Mathe Prüfung (Analysis)', date: '2026-06-15', type: 'Prüfung', subject: 'Mathe' },
+                { id: 2, title: 'Informatik Projekt Abgabe', date: '2026-06-20', type: 'Abgabe', subject: 'Informatik' },
+                { id: 3, title: 'Französisch Vokabeltest', date: '2026-06-25', type: 'Prüfung', subject: 'Französisch' }
+            ],
+            schedule: [
+                { id: 1, day: 'Montag', subject: 'Mathematik', time: '08:00 - 09:30' },
+                { id: 2, day: 'Montag', subject: 'Informatik', time: '09:45 - 11:15' },
+                { id: 3, day: 'Dienstag', subject: 'Französisch', time: '08:00 - 09:30' },
+                { id: 4, day: 'Mittwoch', subject: 'Wirtschaft', time: '10:00 - 11:30' },
+                { id: 5, day: 'Donnerstag', subject: 'Physik', time: '08:30 - 10:00' },
+                { id: 6, day: 'Freitag', subject: 'Geschichte', time: '09:00 - 10:30' }
+            ],
+            summaries: [
+                { id: 1, title: 'Analysis 1 - Komplette Zusammenfassung', subject: 'Mathe', author: 'Sarah M.', date: 'Vor 2 Tagen', desc: 'Alle wichtigen Sätze, Ableitungen und Integrale übersichtlich auf 5 Seiten.', downloads: 42 },
+                { id: 2, title: 'Objektorientierte Programmierung Cheat Sheet', subject: 'Informatik', author: 'Julian K.', date: 'Vor 4 Tagen', desc: 'Java Grundlagen, Vererbung, Polymorphie und Interfaces kurz erklärt.', downloads: 89 },
+                { id: 3, title: 'Die Schweizer Geschichte 1848', subject: 'Geschichte', author: 'Mia W.', date: 'Vor 1 Woche', desc: 'Entstehung des Bundesstaates und Verfassung kompakt zusammengefasst.', downloads: 27 }
+            ],
+            decks: [
+                {
+                    id: 1,
+                    title: 'Wichtige Mathe Formeln',
+                    subject: 'Mathe',
+                    author: 'Sarah M.',
+                    cards: [
+                        { front: 'Ableitung von x^n', back: 'n * x^(n-1)' },
+                        { front: 'Satz des Pythagoras', back: 'a^2 + b^2 = c^2' },
+                        { front: 'Fläche Kreis', back: 'A = pi * r^2' }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: 'Informatik Fachbegriffe',
+                    subject: 'Informatik',
+                    author: 'Julian K.',
+                    cards: [
+                        { front: 'Was ist RAM?', back: 'Random Access Memory (Flüchtiger Arbeitsspeicher)' },
+                        { front: 'Was bedeutet API?', back: 'Application Programming Interface (Schnittstelle)' },
+                        { front: 'Was ist ein Algorithmus?', back: 'Eindeutige Handlungsvorschrift zur Lösung eines Problems.' }
+                    ]
+                }
+            ],
+            activeDeckId: null,
+            currentCardIndex: 0,
+            isCardFlipped: false,
+            studyMode: 'study',
+            testIndex: 0,
+            testScore: 0,
+            posts: [
+                { id: 1, author: 'Julian K.', subject: 'Mathematik', content: 'Kann mir jemand bei Integralrechnung durch Substitution helfen? Verstehe nicht, wann man u substituiert.', time: 'Vor 3 Stunden', answers: [ { author: 'Sarah M.', text: 'Schau dir mal das Video dazu an, du suchst nach einer inneren Funktion deren Ableitung als Faktor davor steht!' } ] },
+                { id: 2, author: 'Mia W.', subject: 'Informatik', content: 'Welche IDE nutzt ihr am liebsten für Webentwicklung? VS Code oder WebStorm?', time: 'Vor 6 Stunden', answers: [] }
+            ],
+            grades: [
+                { id: 1, subject: 'Mathematik', gradesList: [5.0, 5.5], weight: 2 },
+                { id: 2, subject: 'Informatik', gradesList: [5.5], weight: 2 },
+                { id: 3, subject: 'Französisch', gradesList: [4.5], weight: 1 }
+            ],
+            studyRoomMessages: [
+                { id: 1, author: 'Sarah M.', text: 'Hey zusammen! Lernt gerade jemand für die Physik Prüfung nächste Woche?', time: '11:10' },
+                { id: 2, author: 'Julian K.', text: 'Ja, bin gerade dabei die Formeln durchzugehen. Die Mechanik Kapitel sind echt knifflig.', time: '11:12' }
+            ],
+            pomodoro: {
+                timeLeft: 25 * 60,
+                isRunning: false,
+                mode: 'work',
+                timerId: null,
+                completedSessions: 0
+            }
+        };
+
+        // --- Auth System ---
+        function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('auth-username').value.trim();
+            const role = document.getElementById('auth-role').value;
+
+            state.currentUser = {
+                username: username,
+                role: role
+            };
+
+            if(!state.users.some(u => u.username === username)) {
+                state.users.push({
+                    id: 'u_' + Date.now(),
+                    username: username,
+                    role: role,
+                    status: 'Online',
+                    decksCount: 0,
+                    summariesCount: 0
+                });
+            }
+
+            document.getElementById('sidebar-username').innerText = username;
+            document.getElementById('sidebar-role').innerText = role;
+            document.getElementById('sidebar-avatar').innerText = username[0].toUpperCase();
+
+            document.getElementById('auth-screen').classList.add('hidden');
+            showToast(`Willkommen, ${username}!`);
+            renderAll();
+        }
+
+        function logoutUser() {
+            state.currentUser = null;
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        // --- Navigation Tabs ---
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-800');
+                btn.classList.add('hover:bg-indigo-600');
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-indigo-800');
+                activeBtn.classList.remove('hover:bg-indigo-600');
+            }
+
+            renderAll();
+        }
+
+        function renderAll() {
+            renderCalendar();
+            renderSchedule();
+            renderSummaries();
+            renderDecks();
+            renderPosts();
+            renderStudyRoom();
+            renderUsersDirectory();
+            renderGrades();
+        }
+
+        // --- 1. Calendar Logic ---
+        function renderCalendar() {
+            const titleEl = document.getElementById('calendar-month-title');
+            const gridEl = document.getElementById('calendar-days-grid');
+            const upcomingEl = document.getElementById('upcoming-events-list');
+            if(!titleEl || !gridEl) return;
+
+            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            titleEl.innerText = `${months[state.currentMonth]} ${state.currentYear}`;
+            gridEl.innerHTML = '';
+
+            const firstDayIndex = new Date(state.currentYear, state.currentMonth, 1).getDay();
+            const adjustedFirstDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+            const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
+
+            for(let i = 0; i < adjustedFirstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'h-24 bg-slate-50/50 rounded-xl border border-transparent';
+                gridEl.appendChild(empty);
+            }
+
+            for(let d = 1; d <= daysInMonth; d++) {
+                const dayBox = document.createElement('div');
+                dayBox.className = 'h-24 bg-slate-50 p-2 rounded-xl border border-slate-100 flex flex-col justify-between overflow-y-auto';
+                
+                const dateStr = `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                
+                const dayNum = document.createElement('span');
+                dayNum.className = 'text-xs font-bold text-slate-700';
+                dayNum.innerText = d;
+                dayBox.appendChild(dayNum);
+
+                const dayEvents = state.events.filter(e => e.date === dateStr);
+                dayEvents.forEach(ev => {
+                    const badge = document.createElement('div');
+                    badge.className = 'text-[10px] bg-indigo-100 text-indigo-700 font-semibold px-1.5 py-0.5 rounded truncate';
+                    badge.innerText = ev.title;
+                    dayBox.appendChild(badge);
+                });
+
+                gridEl.appendChild(dayBox);
+            }
+
+            if(upcomingEl) {
+                upcomingEl.innerHTML = '';
+                const sorted = [...state.events].sort((a,b) => new Date(a.date) - new Date(b.date));
+                if(sorted.length === 0) {
+                    upcomingEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Keine Termine eingetragen.</p>';
+                } else {
+                    sorted.forEach(ev => {
+                        const item = document.createElement('div');
+                        item.className = 'p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center text-xs';
+                        item.innerHTML = `
+                            <div>
+                                <span class="font-bold text-slate-800 block">${ev.title}</span>
+                                <span class="text-slate-400">${ev.date} • <span class="text-indigo-600 font-semibold">${ev.subject}</span></span>
+                            </div>
+                            <button onclick="deleteEvent(${ev.id})" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+                        `;
+                        upcomingEl.appendChild(item);
+                    });
+                }
+            }
+        }
+
+        function changeMonth(direction) {
+            state.currentMonth += direction;
+            if(state.currentMonth > 11) {
+                state.currentMonth = 0;
+                state.currentYear++;
+            } else if(state.currentMonth < 0) {
+                state.currentMonth = 11;
+                state.currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function addEvent(e) {
+            e.preventDefault();
+            const newEv = {
+                id: Date.now(),
+                title: document.getElementById('event-title').value,
+                date: document.getElementById('event-date').value,
+                type: document.getElementById('event-type').value,
+                subject: document.getElementById('event-subject').value
+            };
+            state.events.push(newEv);
+            closeModal('event-modal');
+            document.getElementById('event-form').reset();
+            renderCalendar();
+            showToast('Termin erfolgreich hinzugefügt!');
+        }
+
+        function deleteEvent(id) {
+            state.events = state.events.filter(e => e.id !== id);
+            renderCalendar();
+            showToast('Termin gelöscht.');
+        }
+
+        // --- 1.5 Schedule Logic ---
+        function renderSchedule() {
+            const grid = document.getElementById('schedule-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+            days.forEach(day => {
+                const dayCol = document.createElement('div');
+                dayCol.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col space-y-3';
+                
+                const dayHeader = document.createElement('h3');
+                dayHeader.className = 'font-bold text-indigo-600 text-sm pb-2 border-b border-slate-100';
+                dayHeader.innerText = day;
+                dayCol.appendChild(dayHeader);
+
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = 'space-y-2 flex-1';
+
+                const dayItems = state.schedule.filter(s => s.day === day);
+                if (dayItems.length === 0) {
+                    itemsContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Keine Fächer eingetragen.</p>';
+                } else {
+                    dayItems.sort((a,b) => a.time.localeCompare(b.time)).forEach(item => {
+                        const el = document.createElement('div');
+                        el.className = 'bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs flex justify-between items-start';
+                        el.innerHTML = `
+                            <div>
+                                <div class="font-bold text-slate-800">${item.subject}</div>
+                                <div class="text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${item.time}</div>
+                            </div>
+                            <button onclick="deleteScheduleItem(${item.id})" class="text-slate-400 hover:text-rose-600"><i class="fa-solid fa-trash-can"></i></button>
+                        `;
+                        itemsContainer.appendChild(el);
+                    });
+                }
+                dayCol.appendChild(itemsContainer);
+                grid.appendChild(dayCol);
+            });
+        }
+
+        function addScheduleItem(e) {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                day: document.getElementById('sch-day').value,
+                subject: document.getElementById('sch-subject').value,
+                time: `${document.getElementById('sch-time-start').value} - ${document.getElementById('sch-time-end').value}`
+            };
+            state.schedule.push(newItem);
+            closeModal('schedule-modal');
+            document.getElementById('schedule-form').reset();
+            renderSchedule();
+            showToast('Stundenplan aktualisiert!');
+        }
+
+        function deleteScheduleItem(id) {
+            state.schedule = state.schedule.filter(s => s.id !== id);
+            renderSchedule();
+            showToast('Eintrag gelöscht.');
+        }
+
+        // --- 2. Summaries Logic ---
+        function renderSummaries(filteredList = null) {
+            const grid = document.getElementById('summaries-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            const list = filteredList || state.summaries;
+            if(list.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10">Keine Zusammenfassungen gefunden.</p>';
+                return;
+            }
+
+            list.forEach(sum => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg">${sum.subject}</span>
+                            <span class="text-xs text-slate-400">${sum.date}</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base">${sum.title}</h3>
+                        <p class="text-slate-500 text-xs line-clamp-2">${sum.desc}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <span class="text-xs text-indigo-600 font-semibold"><i class="fa-solid fa-user-circle mr-1"></i>${sum.author}</span>
+                        <button onclick="downloadSummary(${sum.id})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-download"></i> Download (${sum.downloads})
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterSummaries() {
+            const query = document.getElementById('summary-search').value.toLowerCase();
+            const filterSub = document.getElementById('summary-filter').value;
+
+            const filtered = state.summaries.filter(s => {
+                const matchQuery = s.title.toLowerCase().includes(query) || s.desc.toLowerCase().includes(query) || s.author.toLowerCase().includes(query);
+                const matchSub = filterSub === 'all' || s.subject === filterSub;
+                return matchQuery && matchSub;
+            });
+            renderSummaries(filtered);
+        }
+
+        function addSummary(e) {
+            e.preventDefault();
+            const newSum = {
+                id: Date.now(),
+                title: document.getElementById('sum-title').value,
+                subject: document.getElementById('sum-subject').value,
+                author: state.currentUser ? state.currentUser.username : 'Gast',
+                desc: document.getElementById('sum-desc').value,
+                date: 'Gerade eben',
+                downloads: 0
+            };
+            state.summaries.unshift(newSum);
+            closeModal('summary-modal');
+            document.getElementById('summary-form').reset();
+            renderSummaries();
+            showToast('Zusammenfassung erfolgreich hochgeladen!');
+        }
+
+        function downloadSummary(id) {
+            const sum = state.summaries.find(s => s.id === id);
+            if(sum) {
+                sum.downloads++;
+                renderSummaries();
+                showToast(`"${sum.title}" von ${sum.author} heruntergeladen!`);
+            }
+        }
+
+        // --- 3. Flashcards & Quiz Logic ---
+        function renderDecks() {
+            const grid = document.getElementById('decks-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            state.decks.forEach(deck => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-4 hover:border-indigo-300 transition cursor-pointer';
+                card.onclick = () => openDeckSession(deck.id);
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg">${deck.subject}</span>
+                            <span class="text-[11px] text-indigo-600 font-semibold"><i class="fa-solid fa-user mr-1"></i>${deck.author}</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-lg">${deck.title}</h3>
+                        <p class="text-slate-400 text-xs">${deck.cards.length} Karteikarten</p>
+                    </div>
+                    <div class="flex items-center text-xs font-semibold text-indigo-600 gap-1 pt-2 border-t border-slate-50">
+                        <span>Lernen starten</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openDeckSession(deckId) {
+            state.activeDeckId = deckId;
+            state.currentCardIndex = 0;
+            state.isCardFlipped = false;
+            document.getElementById('flashcard-lobby').classList.add('hidden');
+            document.getElementById('flashcard-session').classList.remove('hidden');
+            renderActiveCard();
+        }
+
+        function closeDeckSession() {
+            state.activeDeckId = null;
+            document.getElementById('flashcard-session').classList.add('hidden');
+            document.getElementById('flashcard-lobby').classList.remove('hidden');
+            renderDecks();
+        }
+
+        function setStudyMode(mode) {
+            state.studyMode = mode;
+            const studyView = document.getElementById('session-study-view');
+            const testView = document.getElementById('session-test-view');
+            const btnStudy = document.getElementById('mode-btn-study');
+            const btnTest = document.getElementById('mode-btn-test');
+
+            if(mode === 'study') {
+                studyView.classList.remove('hidden');
+                testView.classList.add('hidden');
+                btnStudy.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white';
+                btnTest.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200';
+                renderActiveCard();
+            } else {
+                studyView.classList.add('hidden');
+                testView.classList.remove('hidden');
+                btnTest.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white';
+                btnStudy.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200';
+                startTestMode();
+            }
+        }
+
+        function renderActiveCard() {
+            const deck = state.decks.find(d => d.id === state.activeDeckId);
+            if(!deck || deck.cards.length === 0) {
+                document.getElementById('card-content-display').innerText = 'Keine Karten in diesem Deck.';
+                return;
+            }
+
+            const card = deck.cards[state.currentCardIndex];
+            const display = document.getElementById('card-content-display');
+            const label = document.getElementById('card-side-label');
+            const counter = document.getElementById('card-counter');
+
+            if(state.isCardFlipped) {
+                display.innerText = card.back;
+                label.innerText = 'Rückseite (Antwort)';
+                label.className = 'absolute top-4 left-4 text-xs font-bold text-emerald-600 uppercase tracking-wider';
+            } else {
+                display.innerText = card.front;
+                label.innerText = 'Vorderseite (Frage)';
+                label.className = 'absolute top-4 left-4 text-xs font-bold text-indigo-500 uppercase tracking-wider';
+            }
+            counter.innerText = `Karte ${state.currentCardIndex + 1} von ${deck.cards.length}`;
+        }
+
+        function flipCard() {
+            state.isCardFlipped = !state.isCardFlipped;
+            renderActiveCard();
+        }
+
+        function nextCard() {
+            const deck = state.decks.find(d => d.id === state.activeDeckId);
+            if(!deck) return;
+            state.currentCardIndex = (state.currentCardIndex + 1) % deck.cards.length;
+            state.isCardFlipped = false;
+            renderActiveCard();
+        }
+
+        function prevCard() {
+            const deck = state.decks.find(d => d.id === state.activeDeckId);
+            if(!deck) return;
+            state.currentCardIndex = (state.currentCardIndex - 1 + deck.cards.length) % deck.cards.length;
+            state.isCardFlipped = false;
+            renderActiveCard();
+        }
+
+        function addDeck(e) {
+            e.preventDefault();
+            const newDeck = {
+                id: Date.now(),
+                title: document.getElementById('deck-title').value,
+                subject: document.getElementById('deck-subject').value,
+                author: state.currentUser ? state.currentUser.username : 'Gast',
+                cards: []
+            };
+            state.decks.push(newDeck);
+            closeModal('deck-modal');
+            document.getElementById('deck-form').reset();
+            renderDecks();
+            showToast('Neues Deck erstellt!');
+        }
+
+        function addCardToDeck(e) {
+            e.preventDefault();
+            const deck = state.decks.find(d => d.id === state.activeDeckId);
+            if(deck) {
+                deck.cards.push({
+                    front: document.getElementById('card-front').value,
+                    back: document.getElementById('card-back').value
+                });
+                closeModal('card-add-modal');
+                document.getElementById('card-form').reset();
+                renderActiveCard();
+                showToast('Karteikarte hinzugefügt!');
+            }
+        }
+
+        function startTestMode() {
+            state.testIndex = 0;
+            state.testScore = 0;
+            renderTestQuestion();
+        }
+
+        function renderTestQuestion() {
+            const deck = state.decks.find(d => d.id === state.activeDeckId);
+            const box = document.getElementById('test-question-box');
+            const progress = document.getElementById('test-progress');
+            if(!deck || deck.cards.length === 0) return;
+
+            if(state.testIndex >= deck.cards.length) {
+                box.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <i class="fa-solid fa-trophy text-amber-400 text-4xl"></i>
+                        <h4 class="text-xl font-bold text-slate-800">Test abgeschlossen!</h4>
+                        <p class="text-slate-500 text-sm">Du hast ${state.testScore} von ${deck.cards.length} Karten richtig gewusst.</p>
+                        <button onclick="startTestMode()" class="bg-indigo-600 text-white font-medium px-6 py-2.5 rounded-xl text-sm shadow-sm transition">Erneut testen</button>
+                    </div>
+                `;
+                progress.innerText = 'Beendet';
+                return;
+            }
+
+            progress.innerText = `Frage ${state.testIndex + 1} von ${deck.cards.length}`;
+            const currentCard = deck.cards[state.testIndex];
+
+            let options = [currentCard.back];
+            while(options.length < 3 && deck.cards.length >= 3) {
+                const randomCard = deck.cards[Math.floor(Math.random() * deck.cards.length)];
+                if(!options.includes(randomCard.back)) {
+                    options.push(randomCard.back);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            box.innerHTML = `
+                <div class="space-y-4">
+                    <p class="text-xs font-bold text-indigo-600 uppercase">Frage:</p>
+                    <p class="text-lg font-bold text-slate-800">${currentCard.front}</p>
+                    <div class="space-y-2 pt-2">
+                        ${options.map(opt => `
+                            <button onclick="answerTest('${opt.replace(/'/g, "\\'")}', '${currentCard.back.replace(/'/g, "\\'")}')" class="w-full text-left p-3.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl text-sm font-medium transition text-slate-700">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function answerTest(selected, correct) {
+            if(selected === correct) {
+                state.testScore++;
+                showToast('Richtig!');
+            } else {
+                showToast('Falsch!');
+            }
+            state.testIndex++;
+            renderTestQuestion();
+        }
+
+        // --- 3.5 Pomodoro Timer Logic ---
+        function setPomodoroMode(mode) {
+            state.pomodoro.mode = mode;
+            state.pomodoro.isRunning = false;
+            clearInterval(state.pomodoro.timerId);
+            state.pomodoro.timeLeft = mode === 'work' ? 25 * 60 : 5 * 60;
+            
+            const btnWork = document.getElementById('pomo-mode-work');
+            const btnBreak = document.getElementById('pomo-mode-break');
+            const startBtn = document.getElementById('pomo-start-btn');
+            const statusText = document.getElementById('pomo-status-text');
+
+            if (mode === 'work') {
+                btnWork.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition';
+                btnBreak.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+                statusText.innerText = 'Bereit zum Lernen';
+            } else {
+                btnBreak.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white transition';
+                btnWork.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+                statusText.innerText = 'Zeit für eine Pause';
+            }
+            startBtn.innerHTML = '<i class="fa-solid fa-play"></i> Starten';
+            updatePomodoroDisplay();
+        }
+
+        function updatePomodoroDisplay() {
+            const minutes = Math.floor(state.pomodoro.timeLeft / 60);
+            const seconds = state.pomodoro.timeLeft % 60;
+            const display = document.getElementById('pomo-timer-display');
+            if (display) {
+                display.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }
+
+        function startPomodoro() {
+            const startBtn = document.getElementById('pomo-start-btn');
+            const statusText = document.getElementById('pomo-status-text');
+
+            if (state.pomodoro.isRunning) {
+                state.pomodoro.isRunning = false;
+                clearInterval(state.pomodoro.timerId);
+                startBtn.innerHTML = '<i class="fa-solid fa-play"></i> Fortsetzen';
+                statusText.innerText = 'Pausiert';
+            } else {
+                state.pomodoro.isRunning = true;
+                startBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+                statusText.innerText = state.pomodoro.mode === 'work' ? 'Fokus läuft...' : 'Pause läuft...';
+
+                state.pomodoro.timerId = setInterval(() => {
+                    if (state.pomodoro.timeLeft > 0) {
+                        state.pomodoro.timeLeft--;
+                        updatePomodoroDisplay();
+                    } else {
+                        clearInterval(state.pomodoro.timerId);
+                        state.pomodoro.isRunning = false;
+                        if (state.pomodoro.mode === 'work') {
+                            state.pomodoro.completedSessions++;
+                            document.getElementById('pomo-sessions-count').innerText = state.pomodoro.completedSessions;
+                            showToast('Fokus-Session beendet! Gönn dir eine Pause.');
+                            setPomodoroMode('break');
+                        } else {
+                            showToast('Pause beendet! Zurück an die Arbeit.');
+                            setPomodoroMode('work');
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetPomodoro() {
+            state.pomodoro.isRunning = false;
+            clearInterval(state.pomodoro.timerId);
+            state.pomodoro.timeLeft = state.pomodoro.mode === 'work' ? 25 * 60 : 5 * 60;
+            document.getElementById('pomo-start-btn').innerHTML = '<i class="fa-solid fa-play"></i> Starten';
+            document.getElementById('pomo-status-text').innerText = 'Bereit';
+            updatePomodoroDisplay();
+        }
+
+        // --- 4. Community Post Room Logic ---
+        function renderPosts() {
+            const feed = document.getElementById('posts-feed');
+            if(!feed) return;
+            feed.innerHTML = '';
+
+            state.posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">${post.author[0]}</div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-sm">${post.author}</h4>
+                                <span class="text-xs text-slate-400">${post.time}</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg">${post.subject}</span>
+                    </div>
+                    <p class="text-slate-700 text-sm">${post.content}</p>
+                    <div class="border-t border-slate-100 pt-4 space-y-3">
+                        <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Antworten (${post.answers.length})</h5>
+                        <div class="space-y-2">
+                            ${post.answers.map(ans => `
+                                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1">
+                                    <span class="font-bold text-indigo-600">${ans.author}</span>
+                                    <p class="text-slate-700">${ans.text}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <input type="text" id="answer-input-${post.id}" placeholder="Antwort schreiben..." class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="addAnswer(${post.id})" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition">Antworten</button>
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(card);
+            });
+        }
+
+        function addPost(e) {
+            e.preventDefault();
+            const newPost = {
+                id: Date.now(),
+                author: state.currentUser ? state.currentUser.username : 'Gast',
+                subject: document.getElementById('post-subject').value,
+                content: document.getElementById('post-content').value,
+                time: 'Gerade eben',
+                answers: []
+            };
+            state.posts.unshift(newPost);
+            closeModal('post-modal');
+            document.getElementById('post-form').reset();
+            renderPosts();
+            showToast('Frage erfolgreich gepostet!');
+        }
+
+        function addAnswer(postId) {
+            const input = document.getElementById(`answer-input-${postId}`);
+            const text = input.value.trim();
+            if(!text) return;
+
+            const post = state.posts.find(p => p.id === postId);
+            if(post) {
+                post.answers.push({ author: state.currentUser ? state.currentUser.username : 'Du', text: text });
+                input.value = '';
+                renderPosts();
+                showToast('Antwort gesendet!');
+            }
+        }
+
+        // --- 4.5 Virtual Study Room Logic ---
+        function renderStudyRoom() {
+            const container = document.getElementById('study-room-messages');
+            const sidebarUsers = document.getElementById('online-users-sidebar');
+            if (!container) return;
+            container.innerHTML = '';
+
+            state.studyRoomMessages.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = 'p-3 rounded-xl border border-slate-100 bg-slate-50 text-sm space-y-1';
+                bubble.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-indigo-600">${msg.author}</span>
+                        <span class="text-slate-400 text-[10px]">${msg.time}</span>
+                    </div>
+                    <p class="text-slate-700">${msg.text}</p>
+                `;
+                container.appendChild(bubble);
+            });
+            container.scrollTop = container.scrollHeight;
+
+            if(sidebarUsers) {
+                sidebarUsers.innerHTML = '';
+                state.users.forEach(u => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center space-x-3';
+                    row.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">${u.username[0]}</div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">${u.username}</div>
+                            <div class="text-[10px] text-emerald-600 font-medium">${u.role}</div>
+                        </div>
+                    `;
+                    sidebarUsers.appendChild(row);
+                });
+            }
+        }
+
+        function sendStudyRoomMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('study-room-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            state.studyRoomMessages.push({
+                id: Date.now(),
+                author: state.currentUser ? state.currentUser.username : 'Du',
+                text: text,
+                time: timeStr
+            });
+
+            input.value = '';
+            renderStudyRoom();
+            showToast('Nachricht im Study Room gesendet');
+        }
+
+        // --- 4.6 Users Directory Logic ---
+        function renderUsersDirectory() {
+            const grid = document.getElementById('users-directory-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            state.users.forEach(u => {
+                const userDecks = state.decks.filter(d => d.author === u.username);
+                const userSummaries = state.summaries.filter(s => s.author === u.username);
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold flex items-center justify-center text-base shadow">${u.username[0]}</div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base">${u.username}</h3>
+                                <span class="text-xs text-indigo-600 font-semibold">${u.role}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">Status: <span class="text-slate-700 font-medium">${u.status}</span></p>
+                        <div class="grid grid-cols-2 gap-2 text-center text-xs pt-1">
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                <span class="font-bold text-slate-800 block">${userDecks.length}</span>
+                                <span class="text-[10px] text-slate-400">Decks</span>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                <span class="font-bold text-slate-800 block">${userSummaries.length}</span>
+                                <span class="text-[10px] text-slate-400">Skripte</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="showUserProfile('${u.username}')" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-eye"></i> Profil ansehen & Inhalte
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showUserProfile(username) {
+            const userDecks = state.decks.filter(d => d.author === username);
+            const userSums = state.summaries.filter(s => s.author === username);
+            showToast(`${username} hat ${userDecks.length} Decks und ${userSums.length} Zusammenfassungen online!`);
+        }
+
+        // --- 5. Swiss Grades Calculator Logic (6.0 best, 1.0 worst) ---
+        function renderGrades() {
+            const tbody = document.getElementById('grades-table-body');
+            const gpaDisplay = document.getElementById('gpa-display');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let totalWeightedSum = 0;
+            let totalWeights = 0;
+
+            if(state.grades.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Keine Fächer eingetragen.</td></tr>';
+                gpaDisplay.innerText = '-';
+                return;
+            }
+
+            state.grades.forEach(g => {
+                const avg = g.gradesList.reduce((a, b) => a + b, 0) / g.gradesList.length;
+                totalWeightedSum += avg * g.weight;
+                totalWeights += g.weight;
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-50 hover:bg-slate-50/50';
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${g.subject}</td>
+                    <td class="py-3 px-4 text-slate-600">${g.gradesList.join(', ')}</td>
+                    <td class="py-3 px-4 font-semibold text-indigo-600">${avg.toFixed(2)}</td>
+                    <td class="py-3 px-4 text-slate-500">${g.weight}x</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteGradeSubject(${g.id})" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const overallGPA = totalWeights > 0 ? (totalWeightedSum / totalWeights) : 0;
+            gpaDisplay.innerText = overallGPA.toFixed(2);
+        }
+
+        function addGradeSubject(e) {
+            e.preventDefault();
+            const subject = document.getElementById('grade-subject').value;
+            const val = parseFloat(document.getElementById('grade-value').value);
+            const weight = parseInt(document.getElementById('grade-weight').value);
+
+            if (val < 1.0 || val > 6.0) {
+                showToast('Fehler: Schweizer Noten liegen zwischen 1.0 und 6.0!');
+                return;
+            }
+
+            let existing = state.grades.find(g => g.subject.toLowerCase() === subject.toLowerCase());
+            if(existing) {
+                existing.gradesList.push(val);
+                existing.weight = weight;
+            } else {
+                state.grades.push({
+                    id: Date.now(),
+                    subject: subject,
+                    gradesList: [val],
+                    weight: weight
+                });
+            }
+
+            closeModal('grade-modal');
+            document.getElementById('grade-form').reset();
+            renderGrades();
+            showToast('Note erfolgreich eingetragen!');
+        }
+
+        function deleteGradeSubject(id) {
+            state.grades = state.grades.filter(g => g.id !== id);
+            renderGrades();
+            showToast('Fach gelöscht.');
+        }
+
+        window.onload = function() {
+            // User logs in via Auth overlay
+        };
+    </script>
+</body>
+</html>
